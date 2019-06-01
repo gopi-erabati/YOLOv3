@@ -69,7 +69,7 @@ def make_last_layers(x, num_filters, out_filters):
     return x, y
 
 
-def darkent_yolo_body(inputs, num_anchors, num_classes):
+def darknet_yolo_body(inputs, num_anchors, num_classes):
     """Create YOLO_V3 model CNN body in Keras."""
     darknet = Model(inputs, darknet_body(inputs))
     x, y1 = make_last_layers(darknet.output, 512, num_anchors*(num_classes+5))
