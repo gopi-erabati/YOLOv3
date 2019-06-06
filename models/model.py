@@ -14,7 +14,7 @@ from keras.regularizers import l2
 from models.utils import compose
 
 from keras.applications.mobilenet import MobileNet
-from keras.applications.resnet import ResNet50
+from keras.applications.resnet50 import ResNet50
 
 
 @wraps(Conv2D)
