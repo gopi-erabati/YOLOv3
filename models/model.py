@@ -172,26 +172,26 @@ def resnet50_yolo_body(inputs, num_anchors, num_classes):
     f1 = resnet50.get_layer('activation_49').output
     # f1 :7 x 7 x 2048
     # get output of last scale and get output from previous last two layer
-    x, y1 = make_last_layers(f1, 2048, num_anchors * (num_classes + 5)) #SACLE 1
+    x, y1 = make_last_layers(f1, 512, num_anchors * (num_classes + 5)) #SACLE 1
 
     x = compose(
-            DarknetConv2D_BN_Leaky(1024, (1,1)),
+            DarknetConv2D_BN_Leaky(256, (1,1)),
             UpSampling2D(2))(x)
 
     f2 = resnet50.get_layer('activation_40').output
     # f2: 14 x 14 x 1024
     x = Concatenate()([x,f2])
 
-    x, y2 = make_last_layers(x, 1024, num_anchors*(num_classes+5)) #SCALE 2
+    x, y2 = make_last_layers(x, 256, num_anchors*(num_classes+5)) #SCALE 2
 
     x = compose(
-            DarknetConv2D_BN_Leaky(512, (1,1)),
+            DarknetConv2D_BN_Leaky(128, (1,1)),
             UpSampling2D(2))(x)
 
     f3 = resnet50.get_layer('activation_22').output
     # f3 : 28 x 28 x 512
     x = Concatenate()([x, f3])
-    x, y3 = make_last_layers(x, 512, num_anchors*(num_classes+5)) #SCALE 3
+    x, y3 = make_last_layers(x, 128, num_anchors*(num_classes+5)) #SCALE 3
 
     return Model(inputs = inputs, outputs=[y1,y2,y3])
 
