@@ -14,6 +14,7 @@ from keras.regularizers import l2
 from models.utils import compose
 
 from keras.applications.mobilenet import MobileNet
+from keras.applications.resnet import ResNet50
 
 
 @wraps(Conv2D)
@@ -157,6 +158,42 @@ def mobilenet_yolo_body(inputs, num_anchors, num_classes):
 
     return Model(inputs = inputs, outputs=[y1,y2,y3])
 
+def resnet50_yolo_body(inputs, num_anchors, num_classes):
+
+    #create mobile net model
+    resnet50 = ResNet50Net(input_tensor=inputs, weights='imagenet')
+
+    # input: 416 x 416 x 3
+    # activation_49 :7 x 7 x 2048
+    # activation_40 :14 x 14 x 1024
+    # activation_22 : 28 x 28 x 512
+
+    #get output of not top layers of resnet
+    f1 = resnet50.get_layer('activation_49').output
+    # f1 :7 x 7 x 2048
+    # get output of last scale and get output from previous last two layer
+    x, y1 = make_last_layers(f1, 2048, num_anchors * (num_classes + 5)) #SACLE 1
+
+    x = compose(
+            DarknetConv2D_BN_Leaky(1024, (1,1)),
+            UpSampling2D(2))(x)
+
+    f2 = resnet50.get_layer('activation_40').output
+    # f2: 14 x 14 x 1024
+    x = Concatenate()([x,f2])
+
+    x, y2 = make_last_layers(x, 1024, num_anchors*(num_classes+5)) #SCALE 2
+
+    x = compose(
+            DarknetConv2D_BN_Leaky(512, (1,1)),
+            UpSampling2D(2))(x)
+
+    f3 = resnet50.get_layer('activation_22').output
+    # f3 : 28 x 28 x 512
+    x = Concatenate()([x, f3])
+    x, y3 = make_last_layers(x, 512, num_anchors*(num_classes+5)) #SCALE 3
+
+    return Model(inputs = inputs, outputs=[y1,y2,y3])
 
 
 def yolo_head(feats, anchors, num_classes, input_shape, calc_loss=False):
