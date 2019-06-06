@@ -161,7 +161,7 @@ def mobilenet_yolo_body(inputs, num_anchors, num_classes):
 def resnet50_yolo_body(inputs, num_anchors, num_classes):
 
     #create mobile net model
-    resnet50 = ResNet50Net(input_tensor=inputs, weights='imagenet')
+    resnet50 = ResNet50(input_tensor=inputs, weights='imagenet')
 
     # input: 416 x 416 x 3
     # activation_49 :7 x 7 x 2048
